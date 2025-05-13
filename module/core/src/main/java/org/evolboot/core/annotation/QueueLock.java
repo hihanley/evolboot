@@ -14,14 +14,14 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-public @interface NoRepeatSubmit {
+public @interface QueueLock {
 
     /**
      * 默认超时时间
      *
      * @return
      */
-    long timeout() default 100L;
+    long timeout() default 120L;
 
     /**
      * 默认单位
@@ -30,6 +30,20 @@ public @interface NoRepeatSubmit {
      */
     TimeUnit timeUnit() default TimeUnit.SECONDS;
 
-    boolean useUserId() default true;
+    /**
+     * 任务名称
+     *
+     * @return
+     */
+    String taskName() default "";
+
+    String keyPrefix() default "";
+
+    /**
+     * 锁名称
+     *
+     * @return
+     */
+    String key() default "";
 
 }

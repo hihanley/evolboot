@@ -7,6 +7,7 @@ import org.evolboot.core.annotation.AdminClient;
 import org.evolboot.core.data.Page;
 import org.evolboot.core.remote.ResponseModel;
 import org.evolboot.security.api.SecurityAccessTokenHolder;
+import org.evolboot.storage.StorageAuthorities;
 import org.evolboot.storage.domain.blob.entity.Blob;
 import org.evolboot.storage.domain.blob.BlobAppService;
 import org.evolboot.storage.domain.blob.dto.BlobQueryRequest;
@@ -20,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 import static org.evolboot.security.api.access.AccessAuthorities.HAS_ROLE_ADMIN;
+import static org.evolboot.security.api.access.AccessAuthorities.OR;
+import static org.evolboot.storage.StorageAuthorities.Bolb.*;
 
 @RestController
 @RequestMapping("/v1/admin/storage/blob")
@@ -37,7 +40,7 @@ public class AdminBlobResourceV1 {
 
     @Operation(summary = "查询文件服务")
     @GetMapping("")
-    @PreAuthorize(HAS_ROLE_ADMIN)
+    @PreAuthorize(HAS_ROLE_ADMIN + OR + HAS_PAGE)
     public ResponseModel<Page<Blob>> page(
             @RequestParam(name = "page", defaultValue = "1") Integer page,
             @RequestParam(name = "limit", defaultValue = "20") Integer limit
@@ -62,7 +65,7 @@ public class AdminBlobResourceV1 {
         String fileUrl = "";
         try {
             long size = uploadFile.getSize();
-            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.IMAGE, SecurityAccessTokenHolder.getPrincipalId());
+            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.IMAGE, SecurityAccessTokenHolder.getPrincipalId()).getUrl();
         } catch (IOException e) {
             log.error("上传图片异常", e);
         }
@@ -72,7 +75,7 @@ public class AdminBlobResourceV1 {
 
     @PostMapping(path = "/video", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传视频")
-    @PreAuthorize(HAS_ROLE_ADMIN)
+    @PreAuthorize(HAS_ROLE_ADMIN + OR + HAS_CREATE)
 
     public ResponseModel<BlobResponse> uploadVideo(
             @RequestPart("file") MultipartFile uploadFile
@@ -80,7 +83,7 @@ public class AdminBlobResourceV1 {
         String fileUrl = "";
         try {
             long size = uploadFile.getSize();
-            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.VIDEO, SecurityAccessTokenHolder.getPrincipalId());
+            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.VIDEO, SecurityAccessTokenHolder.getPrincipalId()).getUrl();
         } catch (IOException e) {
             log.error("上传视频异常", e);
         }
@@ -90,14 +93,14 @@ public class AdminBlobResourceV1 {
 
     @PostMapping(path = "/document", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传文档")
-    @PreAuthorize(HAS_ROLE_ADMIN)
+    @PreAuthorize(HAS_ROLE_ADMIN + OR + HAS_CREATE)
     public ResponseModel<BlobResponse> uploadDocument(
             @RequestPart("file") MultipartFile uploadFile
     ) {
         String fileUrl = "";
         try {
             long size = uploadFile.getSize();
-            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.DOCUMENT, SecurityAccessTokenHolder.getPrincipalId());
+            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.DOCUMENT, SecurityAccessTokenHolder.getPrincipalId()).getUrl();
         } catch (IOException e) {
             log.error("上传文档异常", e);
         }
@@ -107,14 +110,14 @@ public class AdminBlobResourceV1 {
 
     @PostMapping(path = "/app", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传APP")
-    @PreAuthorize(HAS_ROLE_ADMIN)
+    @PreAuthorize(HAS_ROLE_ADMIN + OR + HAS_CREATE)
     public ResponseModel<BlobResponse> uploadApp(
             @RequestPart("file") MultipartFile uploadFile
     ) {
         String fileUrl = "";
         try {
             long size = uploadFile.getSize();
-            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.APP, SecurityAccessTokenHolder.getPrincipalId());
+            fileUrl = service.create(uploadFile.getInputStream(), uploadFile.getOriginalFilename(), size, FileLimitType.APP, SecurityAccessTokenHolder.getPrincipalId()).getUrl();
         } catch (IOException e) {
             log.error("上传APP异常", e);
         }

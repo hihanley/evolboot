@@ -5,6 +5,7 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.AbstractJPAQuery;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.evolboot.core.data.Query;
 import org.evolboot.core.util.ExtendObjects;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,9 @@ public class QuerydslJpaBaseRepository<T, ID extends Serializable> extends Simpl
     private final QuerydslPredicateExecutor<T> querydslPredicateExecutor;
     private final Querydsl querydsl;
 
+    private JPAQueryFactory queryFactory;
+
+
     public QuerydslJpaBaseRepository(JpaEntityInformation<T, ?> entityInformation, EntityManager entityManager) {
         this(entityInformation, entityManager, SimpleEntityPathResolver.INSTANCE);
     }
@@ -45,6 +49,8 @@ public class QuerydslJpaBaseRepository<T, ID extends Serializable> extends Simpl
         EntityPath<T> path = resolver.createPath(entityInformation.getJavaType());
         PathBuilder<T> builder = new PathBuilder<>(path.getType(), path.getMetadata());
         this.querydsl = new Querydsl(entityManager, builder);
+        this.queryFactory = new JPAQueryFactory(entityManager);
+
     }
 
     @Override
@@ -106,12 +112,17 @@ public class QuerydslJpaBaseRepository<T, ID extends Serializable> extends Simpl
 
     @Override
     public <P, Q extends Query> void orderBy(Q q, OrderSpecifier<?> defaultOrder, JPQLQuery<P> jpqlQuery) {
-        if (ExtendObjects.isNotBlank(q.getOrderField()) && ExtendObjects.nonNull(q.getOrder())) {
-            Path<Object> path = Expressions.path(Object.class, q.getOrderField());
-            jpqlQuery.orderBy(new OrderSpecifier(Order.valueOf(q.getOrder().name()), path));
+        if (ExtendObjects.isNotBlank(q.getSortField()) && ExtendObjects.nonNull(q.getDirection())) {
+            Path<Object> path = Expressions.path(Object.class, q.getSortField());
+            jpqlQuery.orderBy(new OrderSpecifier(Order.valueOf(q.getDirection().name()), path));
         } else if (ExtendObjects.nonNull(defaultOrder)) {
             jpqlQuery.orderBy(defaultOrder);
         }
+    }
+
+    @Override
+    public JPAQueryFactory getQueryFactory() {
+        return queryFactory;
     }
 
     @Override
