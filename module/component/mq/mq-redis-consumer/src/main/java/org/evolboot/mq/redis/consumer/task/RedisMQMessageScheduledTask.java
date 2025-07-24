@@ -5,6 +5,7 @@ import org.evolboot.mq.core.domain.mqtransaction.MqTransactionAppService;
 import org.evolboot.mq.redis.producer.MqMessageRedisTemplate;
 import org.evolboot.mq.redis.producer.RedisMQMessagePublisher;
 import org.evolboot.mq.redis.producer.RedisStreamProperty;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.Executors;
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-public class RedisMQMessageScheduledTask {
+public class RedisMQMessageScheduledTask implements CommandLineRunner {
 
     private final RedisStreamProperty redisStreamProperty;
     private final MqMessageRedisTemplate mqMessageRedisTemplate;
@@ -35,7 +36,9 @@ public class RedisMQMessageScheduledTask {
         this.redisMQMessagePublisher = redisMQMessagePublisher;
     }
 
-    public void init() {
+
+    @Override
+    public void run(String... args) throws Exception {
         this.executorService = Executors.newScheduledThreadPool(2);
 
         // 事务消息处理器
@@ -51,12 +54,11 @@ public class RedisMQMessageScheduledTask {
         RedisMQMessageHandle redisMQRealMessageHandle = new RedisMQMessageHandle(
                 mqMessageRedisTemplate, mqTransactionAppService, redisMQMessagePublisher, redisStreamProperty.getKeyForRealTime(), redisStreamProperty.getGroup()
         );
-        executorService.scheduleAtFixedRate(redisMQTransactionMessageHandle, 5, 5, TimeUnit.SECONDS);
-        executorService.scheduleAtFixedRate(redisMQDelayMessageHandle, 5, 5, TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(redisMQTransactionMessageHandle, 5, 1, TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(redisMQDelayMessageHandle, 5, 1, TimeUnit.SECONDS);
 
         // 实时消息只需要启动时处理一次
         log.info("消息队列:Redis:实时消息:处理未完成的消息");
         redisMQRealMessageHandle.handlePendingMessage();
     }
-
 }

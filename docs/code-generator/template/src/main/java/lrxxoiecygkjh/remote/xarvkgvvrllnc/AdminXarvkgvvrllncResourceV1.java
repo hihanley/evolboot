@@ -13,8 +13,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import projectPackage.lrxxoiecygkjh.domain.xarvkgvvrllnc.entity.Xarvkgvvrllnc;
 import projectPackage.lrxxoiecygkjh.domain.xarvkgvvrllnc.dto.XarvkgvvrllncQueryRequest;
+import projectPackage.lrxxoiecygkjh.domain.xarvkgvvrllnc.dto.XarvkgvvrllncQueryRequestByMember;
 import projectPackage.lrxxoiecygkjh.remote.xarvkgvvrllnc.dto.*;
 import projectPackage.core.data.Page;
+import projectPackage.shared.security.CurrentSessionHolder;
 
 import jakarta.validation.Valid;
 import java.util.List;
@@ -56,7 +58,7 @@ public class AdminXarvkgvvrllncResourceV1 {
             @RequestBody @Valid
             XarvkgvvrllncCreateRequest request
     ) {
-        Xarvkgvvrllnc instantiationObjectName = appService.create(request);
+        Xarvkgvvrllnc instantiationObjectName = appService.create(CurrentSessionHolder.getPrincipalId(), request);
         return ResponseModel.ok(new DomainId(instantiationObjectName.id()));
     }
 
@@ -68,7 +70,7 @@ public class AdminXarvkgvvrllncResourceV1 {
     public ResponseModel<?> delete(
             @PathVariable("id") Keya2Akk5iV3n id
     ) {
-        appService.delete(id);
+        appService.delete(CurrentSessionHolder.getPrincipalId(), id);
         return ResponseModel.ok();
     }
 
@@ -81,7 +83,7 @@ public class AdminXarvkgvvrllncResourceV1 {
             @RequestBody @Valid
             XarvkgvvrllncUpdateRequest request
     ) {
-        appService.update(request);
+        appService.update(CurrentSessionHolder.getPrincipalId(), request);
         return ResponseModel.ok();
     }
 
@@ -115,6 +117,7 @@ public class AdminXarvkgvvrllncResourceV1 {
                 .page(page)
                 .limit(limit)
                 .keyword(keyword)
+                .userId(CurrentSessionHolder.getPrincipalId())
                 .build();
         Page<Xarvkgvvrllnc> response = queryService.page(query);
         return ResponseModel.ok(response);
@@ -143,6 +146,7 @@ public class AdminXarvkgvvrllncResourceV1 {
                 .beginAt(beginAt)
                 .endAt(endAt)
                 .keyword(keyword)
+                .userId(CurrentSessionHolder.getPrincipalId())
                 .build();
         return ResponseModel.ok(queryService.findAll(query));
     }
@@ -157,4 +161,15 @@ public class AdminXarvkgvvrllncResourceV1 {
         return ResponseModel.ok(queryService.findById(id));
     }
 
+
+    @Operation(summary = "批量删除模板")
+    @OperationLog("批量删除模板")
+    @DeleteMapping("/batch")
+    @PreAuthorize(HAS_ROLE_ADMIN + OR + HAS_SINGLE)
+    public ResponseModel<?> delete(
+            @RequestBody XarvkgvvrllncQueryRequestByMember request
+    ) {
+        appService.delete(request.convert(CurrentSessionHolder.getPrincipalId()));
+        return ResponseModel.ok();
+    }
 }

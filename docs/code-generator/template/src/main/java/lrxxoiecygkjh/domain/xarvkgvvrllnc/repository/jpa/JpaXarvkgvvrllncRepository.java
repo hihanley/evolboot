@@ -50,6 +50,9 @@ public interface JpaXarvkgvvrllncRepository extends XarvkgvvrllncRepository, Ext
         if (ExtendObjects.nonNull(query.getEndAt())) {
             jpqlQuery.where(q.createAt.loe(query.getEndAt()));
         }
+        if (ExtendObjects.nonNull(query.getUserId())) {
+//            jpqlQuery.where(q.userId.eq(query.getUserId()));
+        }
         if (ExtendObjects.isNotBlank(query.getKeyword())) {
 //            jpqlQuery.where(q.name.eq(query.getKeyword()));
         }
@@ -60,6 +63,11 @@ public interface JpaXarvkgvvrllncRepository extends XarvkgvvrllncRepository, Ext
         JPQLQuery<Xarvkgvvrllnc> jpqlQuery = getJPQLQuery();
         jpqlQuery.select(q).from(q).orderBy(q.createAt.desc());
         return this.findAll(jpqlQuery);
+    }
+
+    @Override
+    default List<Keya2Akk5iV3n> findAllId(XarvkgvvrllncQueryRequest query) {
+        return findAll(fillQueryParameter(query, QXarvkgvvrllnc.instantiationObjectName.id));
     }
 
     @Override
